@@ -21,14 +21,15 @@ func NewMySQL() *MySQL {
 
 func (mysql *MySQL) Guardar(product *entities.Product) error {
 	query := `INSERT INTO productos 
-              (nombre, precio, codigo, descuento) 
-              VALUES (?, ?, ?, ?)`
+              (nombre, precio, codigo, descuento, email) 
+              VALUES (?, ?, ?, ?, ?)`
 
 	result, err := mysql.conn.ExecutePreparedQuery(query,
 		product.Nombre,
 		product.Precio,
 		product.Codigo,
-		product.Descuento)
+		product.Descuento,
+		product.Email)
 
 	if err != nil {
 		return fmt.Errorf("error al guardar el producto: %v", err)
@@ -45,7 +46,7 @@ func (mysql *MySQL) Guardar(product *entities.Product) error {
 }
 
 func (mysql *MySQL) ObtenerTodos() ([]entities.Product, error) {
-	query := `SELECT id, nombre, precio, codigo, descuento, fecha_creacion 
+	query := `SELECT id, nombre, precio, codigo, descuento, email, fecha_creacion 
               FROM productos
               ORDER BY fecha_creacion DESC`
 
@@ -61,6 +62,7 @@ func (mysql *MySQL) ObtenerTodos() ([]entities.Product, error) {
 			&product.Precio,
 			&product.Codigo,
 			&product.Descuento,
+			&product.Email,
 			&product.FechaCreacion); err != nil {
 			return nil, fmt.Errorf("error al escanear producto: %v", err)
 		}
@@ -71,7 +73,7 @@ func (mysql *MySQL) ObtenerTodos() ([]entities.Product, error) {
 }
 
 func (mysql *MySQL) ObtenerPorId(id int) (*entities.Product, error) {
-	query := `SELECT id, nombre, precio, codigo, descuento, fecha_creacion 
+	query := `SELECT id, nombre, precio, codigo, descuento, email, fecha_creacion 
               FROM productos 
               WHERE id = ?`
 
@@ -86,6 +88,7 @@ func (mysql *MySQL) ObtenerPorId(id int) (*entities.Product, error) {
 			&product.Precio,
 			&product.Codigo,
 			&product.Descuento,
+			&product.Email,
 			&product.FechaCreacion)
 		if err != nil {
 			return nil, fmt.Errorf("error al escanear producto: %v", err)
@@ -96,7 +99,7 @@ func (mysql *MySQL) ObtenerPorId(id int) (*entities.Product, error) {
 }
 
 func (mysql *MySQL) ObtenerUltimoProducto() (*entities.Product, error) {
-	query := `SELECT id, nombre, precio, codigo, descuento, fecha_creacion 
+	query := `SELECT id, nombre, precio, codigo, descuento, email, fecha_creacion 
               FROM productos 
               ORDER BY fecha_creacion DESC 
               LIMIT 1`
@@ -112,6 +115,7 @@ func (mysql *MySQL) ObtenerUltimoProducto() (*entities.Product, error) {
 			&product.Precio,
 			&product.Codigo,
 			&product.Descuento,
+			&product.Email,
 			&product.FechaCreacion)
 		if err != nil {
 			return nil, fmt.Errorf("error al escanear producto: %v", err)

@@ -8,5 +8,6 @@ type Product struct {
 	Precio        int       `json:"precio"`
 	Codigo        string    `json:"codigo"`
 	Descuento     bool      `json:"descuento"`
+	Email         string    `json:"email"`
 	FechaCreacion time.Time `json:"fecha_creacion,omitempty"`
 }

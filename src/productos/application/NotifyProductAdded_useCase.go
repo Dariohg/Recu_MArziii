@@ -3,6 +3,7 @@ package application
 import (
 	"233338-R-C2/src/productos/domain/entities"
 	"233338-R-C2/src/productos/domain/services"
+	"errors"
 )
 
 // NotifyProductAdded es el caso de uso para notificar cuando se agrega un producto
@@ -18,7 +19,12 @@ func NewNotifyProductAdded(emailService services.EmailService) *NotifyProductAdd
 }
 
 // Execute ejecuta el caso de uso para notificar sobre un producto agregado
-func (n *NotifyProductAdded) Execute(product *entities.Product, recipientEmail string) error {
+// usando el correo almacenado en el producto
+func (n *NotifyProductAdded) Execute(product *entities.Product) error {
+	if product.Email == "" {
+		return errors.New("el producto no tiene un correo electrónico asociado")
+	}
+
 	// Convertir el producto a un mapa para enviarlo al servicio de correo
 	productData := map[string]interface{}{
 		"id":        product.ID,
@@ -28,5 +34,5 @@ func (n *NotifyProductAdded) Execute(product *entities.Product, recipientEmail s
 		"descuento": product.Descuento,
 	}
 
-	return n.emailService.SendProductNotification(recipientEmail, productData)
+	return n.emailService.SendProductNotification(product.Email, productData)
 }
