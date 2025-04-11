@@ -12,15 +12,20 @@ func ConfigureProductRoutes(r *gin.Engine) {
 
 	// Servicios
 	bcryptService := infraServices.NewBcryptService()
+	messagingService := infraServices.NewMockMessagingService()
+
+	// Configurar el servicio de correo basado en el servicio de mensajería
+	emailService := infraServices.NewMockEmailService(messagingService)
 
 	// Casos de uso
 	addProduct := application.NewAddProduct(mysql, bcryptService)
 	getLastProduct := application.NewGetLastProduct(mysql)
 	countProductsInDiscount := application.NewCountProductsInDiscount(mysql)
 	listProduct := application.NewListProduct(mysql)
+	notifyProductAdded := application.NewNotifyProductAdded(emailService)
 
 	// Controladores
-	addProductController := NewAddProductController(addProduct)
+	addProductController := NewAddProductController(addProduct, notifyProductAdded)
 	isNewProductAddedController := NewIsNewProductAddedController(getLastProduct)
 	countProductsInDiscountController := NewCountProductsInDiscountController(countProductsInDiscount)
 	listProductController := NewListProductController(listProduct)
