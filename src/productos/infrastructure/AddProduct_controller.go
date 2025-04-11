@@ -9,15 +9,11 @@ import (
 )
 
 type AddProductController struct {
-	useCase       *application.AddProduct
-	notifyUseCase *application.NotifyProductAdded
+	useCase *application.AddProduct
 }
 
-func NewAddProductController(useCase *application.AddProduct, notifyUseCase *application.NotifyProductAdded) *AddProductController {
-	return &AddProductController{
-		useCase:       useCase,
-		notifyUseCase: notifyUseCase,
-	}
+func NewAddProductController(useCase *application.AddProduct) *AddProductController {
+	return &AddProductController{useCase: useCase}
 }
 
 // isValidEmail valida el formato del correo electrónico
@@ -34,6 +30,7 @@ func (apc *AddProductController) Execute(c *gin.Context) {
 		return
 	}
 
+	// Validar campos obligatorios
 	if product.Nombre == "" || product.Codigo == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Nombre y código son campos obligatorios"})
 		return
@@ -45,29 +42,14 @@ func (apc *AddProductController) Execute(c *gin.Context) {
 		return
 	}
 
-	// Verificar si se debe enviar notificación
-	shouldNotify := c.Query("notify") == "true" || product.Email != ""
-
-	// Guardar el producto en la base de datos
+	// Ejecutar el caso de uso - ahora también manejará el envío de correo
 	if err := apc.useCase.Execute(&product); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Enviar notificación si se debe hacer
-	notificationSent := false
-	if shouldNotify && apc.notifyUseCase != nil && product.Email != "" {
-		go func() {
-			err := apc.notifyUseCase.Execute(&product)
-			if err != nil {
-				c.Error(err)
-			}
-		}()
-		notificationSent = true
-	}
-
 	c.JSON(http.StatusCreated, gin.H{
 		"producto":             product,
-		"notificacion_enviada": notificationSent,
+		"notificacion_enviada": product.Email != "",
 	})
 }
